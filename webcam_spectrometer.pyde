@@ -1,3 +1,4 @@
+from __future__ import print_function
 # https://github.com/Drunkar/gicentreutils
 add_library("gicentreUtils")
 add_library("video")
@@ -186,7 +187,7 @@ def draw():
     translate(x_debug_window + margin_chart + x_offset_left, y_offset_top)
     scale((x_c - x_debug_window - margin_chart * 2 -
            x_offset_left - x_offset_right) / float(x_c), (height - captured_max - margin_chart * 2.5 - y_offset_top - y_offset_bottom) / float(y_c - captured_max))
-    drawAxis()
+    drawScale()
     popMatrix()
 
 
@@ -293,18 +294,55 @@ def chartsInit():
     line_chart_b.setLineWidth(2)
 
 
-def drawAxis():
+def drawScale():
     x_unit = float(x_c) / (wavelength_nm_max - wavelength_nm_min)
     y_unit = float(y_c - captured_max) / (intensity_max - intensity_min)
     y_padding = captured_max
-    stroke(color(225, 225, 225, 200))
-    strokeWeight(2)
+
+    x_scale = createGraphics(img_spectrum.width, img_spectrum.height)
+    x_scale.beginDraw()
+    x_scale.background(255, 0)
+    x_scale.noFill()
+    x_scale.stroke(color(225, 225, 225, 100))
+    x_scale.strokeWeight(2)
     for i in range(7):
-        line(x_unit * 50 * i + x_unit * 20, margin_chart,
-             x_unit * 50 * i + x_unit * 20, height - y_padding)
+        x_scale.line(x_unit * 50 * i + x_unit * 20, margin_chart,
+                     x_unit * 50 * i + x_unit * 20, height - y_padding)
+    x_scale.endDraw()
+    manualMask(x_scale, mask_spectrum, 100)
+    image(x_scale, 0, 0)
 
     stroke(color(45, 45, 45, 200))
     strokeWeight(1)
     for i in range(1, 6):
         line(0, height - y_padding - y_unit * 20 * i,
              width, height - y_padding - y_unit * 20 * i)
+
+
+def manualMask(pg, mask, alpha):
+    """
+    You can set total alpha because alpha in pg was reset.
+    """
+    mask.loadPixels()
+    pg.beginDraw()
+    pg.loadPixels()
+    for i in range(len(pg.pixels)):
+
+        d = pg.pixels[i]
+
+        # mask alpha
+        m_a = mask.pixels[i] & 0xFF
+        # display alpha
+        d_a = (d >> 24) & 0xFF
+        # output alpha (do not change alpha if already transparent)
+        if d_a == 0:
+            o_a = d_a
+            pg.pixels[i] = (o_a << 24) | (0x00FFFFFF & d)
+        else:
+            o_a = m_a
+            if o_a == 0xFF:
+                o_a = alpha
+            pg.pixels[i] = (o_a << 24) | (0x00FFFFFF & d)
+
+    pg.updatePixels()
+    pg.endDraw()
