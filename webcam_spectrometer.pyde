@@ -24,10 +24,10 @@ line_chart_r = None
 line_chart_g = None
 line_chart_b = None
 margin_chart = 0
-margin_chart_left = 100
-margin_chart_right = 55
+margin_chart_left = 49
+margin_chart_right = 34
 margin_chart_top = 19
-margin_chart_bottom = 73
+margin_chart_bottom = 36
 captured_max = 50
 wavelength_nm_min = 380
 wavelength_nm_max = 750
@@ -37,6 +37,9 @@ intensities = {"R": [], "G": [], "B": [], "Intensity": []}
 img_spectrum = None
 imgpath_spectrum = "spectrum_380_to_750.png"
 mask_spectrum = None
+txt_big = None
+txt_small = None
+txt_tiny = None
 
 
 def clear_intensities():
@@ -100,7 +103,6 @@ def draw():
     captured_lines.append(c.pixels[x_c * y_c / 2: x_c * y_c / 2 + x_c])
     if len(captured_lines) > captured_max:
         del captured_lines[0]
-
 
     pushMatrix()
     translate(x_debug_window + margin_chart + x_offset_left, 0)
@@ -172,22 +174,13 @@ def draw():
     img_spectrum.mask(mask_spectrum)
     image(img_spectrum, 0, 0)
 
-
     pushMatrix()
     resetMatrix()
     translate(x_debug_window + margin_chart, 0)
     scale((x_c - x_debug_window - margin_chart * 2) / float(x_c), 1)
     if rgb_check:
-        line_chart_i.draw(margin_chart, margin_chart, width -
-                        margin_chart, height - captured_max - margin_chart * 2.5)
-        line_chart_r.draw(margin_chart, margin_chart, width -
-                          margin_chart, height - captured_max - margin_chart * 2.5)
-        line_chart_g.draw(margin_chart, margin_chart, width -
-                          margin_chart, height - captured_max - margin_chart * 2.5)
-        line_chart_b.draw(margin_chart, margin_chart, width -
-                          margin_chart, height - captured_max - margin_chart * 2.5)
+        drawCharts()
     popMatrix()
-
 
     drawScale()
     popMatrix()
@@ -224,7 +217,11 @@ def keyPressed():
 
 def chartsInit():
     global line_chart_i, line_chart_r, line_chart_g, line_chart_b
-    textFont(createFont("Arial", 10), 32)
+    global txt_big, txt_small, txt_tiny
+    txt_big = loadFont("SquareSansSerif7-32.vlw")
+    txt_small = loadFont("NotoSans-18.vlw")
+    txt_tiny = loadFont("NotoSans-14.vlw")
+    textFont(txt_big)
     line_chart_i = XYChart(this)
     line_chart_r = XYChart(this)
     line_chart_g = XYChart(this)
@@ -296,6 +293,18 @@ def chartsInit():
     line_chart_b.setLineWidth(2)
 
 
+def drawCharts():
+    textFont(txt_small)
+    line_chart_i.draw(margin_chart, margin_chart, width -
+                      margin_chart, height - captured_max - margin_chart * 2.5)
+    line_chart_r.draw(margin_chart, margin_chart, width -
+                      margin_chart, height - captured_max - margin_chart * 2.5)
+    line_chart_g.draw(margin_chart, margin_chart, width -
+                      margin_chart, height - captured_max - margin_chart * 2.5)
+    line_chart_b.draw(margin_chart, margin_chart, width -
+                      margin_chart, height - captured_max - margin_chart * 2.5)
+
+
 def drawScale():
     x_unit = float(x_c) / (wavelength_nm_max - wavelength_nm_min)
     y_unit = float(y_c - captured_max) / (intensity_max - intensity_min)
@@ -319,6 +328,37 @@ def drawScale():
     for i in range(1, 6):
         line(0, height - y_padding - y_unit * 20 * i,
              width, height - y_padding - y_unit * 20 * i)
+
+    # number
+    textFont(txt_big)
+    fill(225, 200)
+    text("Wave Length", width - 280, height - y_padding + 20)
+    fill(45, 200)
+    text("INTENSITY", 55, 20)
+
+    textFont(txt_small)
+    fill(225, 200)
+    for i in range(4):
+        text(str(i * 100 + 400) + " nm", x_unit * 2 * 50 *
+             i + x_unit * 20 + 5, height - y_padding - 2)
+    textFont(txt_tiny)
+    text("380", 5, height - y_padding - 2)
+    text("750", width - 30, height - y_padding - 2)
+
+    textFont(txt_small)
+    noStroke()
+    for i in range(1, 5):
+        fill(225, 200)
+        rect(0, height - y_padding - y_unit * 20 * i - 2 - 17, 45, 19)
+        fill(45, 200)
+        text(str(i * 20) + " %", 2, height - y_padding - y_unit * 20 * i - 2)
+    textFont(txt_tiny)
+    fill(225, 200)
+    rect(0, height - y_padding - 35, 40, 19)
+    rect(0, height - y_padding - y_unit * 20 * 5 + 1, 45, 19)
+    fill(45, 200)
+    text("0", 2, height - y_padding - 20)
+    text("100 %", 2, height - y_padding - y_unit * 20 * 5 + 16)
 
 
 def manualMask(pg, mask, alpha):
