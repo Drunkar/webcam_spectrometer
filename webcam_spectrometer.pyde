@@ -101,6 +101,7 @@ def draw():
     if len(captured_lines) > captured_max:
         del captured_lines[0]
 
+
     pushMatrix()
     translate(x_debug_window + margin_chart + x_offset_left, 0)
     scale((x_c - x_debug_window - margin_chart * 2 -
@@ -138,6 +139,10 @@ def draw():
     line_chart_g.setData(x_data, intensities["G"])
     line_chart_b.setData(x_data, intensities["B"])
 
+    pushMatrix()
+    translate(x_debug_window + margin_chart + x_offset_left, y_offset_top)
+    scale((x_c - x_debug_window - margin_chart * 2 -
+           x_offset_left - x_offset_right) / float(x_c), (height - captured_max - margin_chart * 2.5 - y_offset_top - y_offset_bottom) / float(y_c - captured_max))
     # spectrum image
     mask_spectrum.beginDraw()
     mask_spectrum.background(0)
@@ -145,48 +150,45 @@ def draw():
     mask_spectrum.noStroke()
     x_map = float(width) / \
         (wavelength_nm_max - wavelength_nm_min)
-    y_map = float(height - captured_max - margin_chart * 2.5 - y_offset_bottom) / \
+    y_map = float(height - captured_max - margin_chart * 2.5) / \
         (intensity_max - intensity_min)
     for i, intensity in enumerate(intensities["Intensity"][:-1]):
         mask_spectrum.quad(
             (x_data[i] - wavelength_nm_min) *
             x_map,
             height - captured_max - margin_chart * 2.5 -
-            intensities["Intensity"][i] * y_map - y_offset_bottom,
+            intensities["Intensity"][i] * y_map,
             (x_data[i + 1] - wavelength_nm_min) *
             x_map,
             height - captured_max - margin_chart * 2.5 -
-            intensities["Intensity"][i + 1] * y_map - y_offset_bottom,
+            intensities["Intensity"][i + 1] * y_map,
             (x_data[i + 1] - wavelength_nm_min) *
             x_map,
-            height - captured_max - margin_chart * 2.5 - y_offset_bottom,
+            height - captured_max - margin_chart * 2.5,
             (x_data[i] - wavelength_nm_min) *
             x_map,
-            height - captured_max - margin_chart * 2.5 - y_offset_bottom)
+            height - captured_max - margin_chart * 2.5)
     mask_spectrum.endDraw()
     img_spectrum.mask(mask_spectrum)
+    image(img_spectrum, 0, 0)
+
 
     pushMatrix()
-    translate(x_debug_window + margin_chart + x_offset_left, 0)
-    scale((x_c - x_debug_window - margin_chart * 2 -
-           x_offset_left - x_offset_right) / float(x_c), 1)
-    image(img_spectrum, 0, 0)
+    resetMatrix()
+    translate(x_debug_window + margin_chart, 0)
+    scale((x_c - x_debug_window - margin_chart * 2) / float(x_c), 1)
+    if rgb_check:
+        line_chart_i.draw(margin_chart, margin_chart, width -
+                        margin_chart, height - captured_max - margin_chart * 2.5)
+        line_chart_r.draw(margin_chart, margin_chart, width -
+                          margin_chart, height - captured_max - margin_chart * 2.5)
+        line_chart_g.draw(margin_chart, margin_chart, width -
+                          margin_chart, height - captured_max - margin_chart * 2.5)
+        line_chart_b.draw(margin_chart, margin_chart, width -
+                          margin_chart, height - captured_max - margin_chart * 2.5)
     popMatrix()
 
-    if rgb_check:
-        line_chart_i.draw(x_debug_window + margin_chart, margin_chart, width -
-                          x_debug_window - margin_chart, height - captured_max - margin_chart * 2.5)
-        line_chart_r.draw(x_debug_window + margin_chart, margin_chart, width -
-                          x_debug_window - margin_chart, height - captured_max - margin_chart * 2.5)
-        line_chart_g.draw(x_debug_window + margin_chart, margin_chart, width -
-                          x_debug_window - margin_chart, height - captured_max - margin_chart * 2.5)
-        line_chart_b.draw(x_debug_window + margin_chart, margin_chart, width -
-                          x_debug_window - margin_chart, height - captured_max - margin_chart * 2.5)
 
-    pushMatrix()
-    translate(x_debug_window + margin_chart + x_offset_left, y_offset_top)
-    scale((x_c - x_debug_window - margin_chart * 2 -
-           x_offset_left - x_offset_right) / float(x_c), (height - captured_max - margin_chart * 2.5 - y_offset_top - y_offset_bottom) / float(y_c - captured_max))
     drawScale()
     popMatrix()
 
@@ -304,12 +306,12 @@ def drawScale():
     x_scale.background(255, 0)
     x_scale.noFill()
     x_scale.stroke(color(225, 225, 225, 100))
-    x_scale.strokeWeight(2)
+    x_scale.strokeWeight(1)
     for i in range(7):
         x_scale.line(x_unit * 50 * i + x_unit * 20, margin_chart,
                      x_unit * 50 * i + x_unit * 20, height - y_padding)
     x_scale.endDraw()
-    manualMask(x_scale, mask_spectrum, 100)
+    manualMask(x_scale, mask_spectrum, 180)
     image(x_scale, 0, 0)
 
     stroke(color(45, 45, 45, 200))
