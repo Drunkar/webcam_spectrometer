@@ -1,7 +1,7 @@
 from __future__ import print_function
 # https://github.com/Drunkar/gicentreutils
 add_library("gicentreUtils")
-add_library("video")
+add_library("glvideo")
 
 debug_mode = False
 axis_check = False
@@ -49,7 +49,7 @@ def clear_intensities():
 
 def setup():
     global c, frame, x_c, y_c, x_c_viewport, y_c_viewport, img_spectrum, mask_spectrum
-    size(960, 640)
+    size(960, 640, P2D)
     smooth()
     x_c_viewport = width / 4
     y_c_viewport = height / 4
@@ -57,20 +57,26 @@ def setup():
     y_c = height
 
     # capture
-    c = Capture(this, x_c, y_c, 8)
-    c.start()
-    frame = createGraphics(x_c_viewport, y_c_viewport)
+    devices = GLCapture.list()
+    if 0 < len(devices):
+        configs = GLCapture.configs(devices[0])
+    # c = GLCapture(this, devices[0], x_c, y_c, 8)
+    c = GLCapture(this)
+    c.play()
+    frame = createGraphics(x_c_viewport, y_c_viewport, P2D)
 
     # charts
     chartsInit()
     img_spectrum = loadImage(imgpath_spectrum)
-    mask_spectrum = createGraphics(img_spectrum.width, img_spectrum.height)
+    mask_spectrum = createGraphics(img_spectrum.width, img_spectrum.height, P2D)
 
 
 def draw():
     global captured_lines, intensities, x_c_viewport, y_c_viewport, x_debug_window, y_debug_window
     global img_spectrum, mask_spectrum, x_offset_left, x_offset_right, y_offset_top, y_offset_bottom
     drawBackground()
+    
+    updateCamera()
 
     if debug_mode:
         x_debug_window = x_c_viewport
@@ -195,14 +201,14 @@ def drawBackground():
                 1.5 - 10 * i, height * 1.5 - 10 * i)
 
 
-def captureEvent(c):
-    """Capture update event."""
-    c.read()
-    if frame is not None:
-        # draw resized image to buffer -> faster than PImage.resize()
-        frame.beginDraw()
-        frame.image(c, 0, 0, x_c_viewport, y_c_viewport)
-        frame.endDraw()
+def updateCamera():
+    if c.available():
+        c.read()
+        if frame is not None:
+            # draw resized image to buffer -> faster than PImage.resize()
+            frame.beginDraw()
+            frame.image(c, 0, 0, x_c_viewport, y_c_viewport)
+            frame.endDraw()
 
 
 def keyPressed():
@@ -310,7 +316,7 @@ def drawScale():
     y_unit = float(y_c - captured_max) / (intensity_max - intensity_min)
     y_padding = captured_max
 
-    x_scale = createGraphics(img_spectrum.width, img_spectrum.height)
+    x_scale = createGraphics(img_spectrum.width, img_spectrum.height, P2D)
     x_scale.beginDraw()
     x_scale.background(255, 0)
     x_scale.noFill()
