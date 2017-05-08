@@ -19,7 +19,7 @@ int y_offset_top;
 int y_offset_bottom;
 int[][] captured_lines;
 int captured_index;
-int captured_max = 50;
+int captured_max = 5;
 XYChart line_chart_i;
 XYChart line_chart_r;
 XYChart line_chart_g;
@@ -350,19 +350,12 @@ void drawScale() {
   float y_unit = float(y_c - captured_max) / (intensity_max - intensity_min);
   float y_padding = captured_max;
 
-  PGraphics x_scale = createGraphics(img_spectrum.width, img_spectrum.height, P2D);
-  x_scale.beginDraw();
-  x_scale.background(255, 0);
-  x_scale.noFill();
-  x_scale.stroke(color(225, 225, 225, 100));
-  x_scale.strokeWeight(1);
+  stroke(color(225, 225, 225, 100));
+  strokeWeight(1);
   for(int i=0; i<7; i++) {
-    x_scale.line(x_unit * 50 * i + x_unit * 20, margin_chart,
-           x_unit * 50 * i + x_unit * 20, height - y_padding);
+    line(x_unit * 50 * i + x_unit * 20, margin_chart,
+         x_unit * 50 * i + x_unit * 20, height - y_padding);
   }
-  x_scale.endDraw();
-  manualMask(x_scale, mask_spectrum, 180);
-  image(x_scale, 0, 0);
 
   stroke(color(45, 45, 45, 200));
   strokeWeight(1);
@@ -374,8 +367,8 @@ void drawScale() {
   // number
   textFont(txt_big);
   fill(225, 200);
-  text("Wave Length", width - 280, height - y_padding + 20);
-  fill(45, 200);
+  text("Wave Length", width - 280, height - y_padding - 20);
+  fill(225, 200);
   text("INTENSITY", 55, 20);
 
   textFont(txt_small);
