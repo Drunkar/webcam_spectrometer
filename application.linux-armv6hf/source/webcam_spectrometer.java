@@ -67,6 +67,7 @@ public void clear_intensities() {
 
 
 public void setup() {
+  //size(640, 480, P2D);
   
   
   x_c_viewport = width / 4;
@@ -450,7 +451,7 @@ public void manualMask(PGraphics pg, PGraphics mask, int alpha) {
   pg.updatePixels();
   pg.endDraw();
 }
-  public void settings() {  size(640, 480, P2D);  smooth(); }
+  public void settings() {  fullScreen(P2D);  smooth(); }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "webcam_spectrometer" };
     if (passedArgs != null) {
