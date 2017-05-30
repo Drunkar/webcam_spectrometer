@@ -48,8 +48,8 @@ void clear_intensities() {
 
 
 void setup() {
-  //size(640, 480, P2D);
-  fullScreen(P2D);
+  size(640, 480, P2D);
+  //fullScreen(P2D);
   smooth();
   x_c_viewport = width / 4;
   y_c_viewport = height / 4;
