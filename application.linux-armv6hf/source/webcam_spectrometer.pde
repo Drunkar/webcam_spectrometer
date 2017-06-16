@@ -34,8 +34,10 @@ int wavelength_nm_max = 750;
 int intensity_min = 0;
 int intensity_max = 100;
 float[][] intensities;
+int width_capture;
+int y_capture;
 PImage img_spectrum;
-String imgpath_spectrum = "spectrum_380_to_750.png";
+String imgpath_spectrum = "spectrum_380_to_750_half.png";
 PGraphics mask_spectrum;
 PFont txt_big;
 PFont txt_small;
@@ -55,9 +57,11 @@ void setup() {
   y_c_viewport = height / 4;
   x_c = width;
   y_c = height;
+  width_capture = x_c/2;
+  y_capture = y_c / 2 + 95;
   captured_index = 0;
   clear_intensities();
-  captured_lines = new int[captured_max][x_c];
+  captured_lines = new int[captured_max][width_capture];
 
   // capture
   String[] devices = GLCapture.list();
@@ -96,7 +100,7 @@ void draw() {
 
     // center line
     stroke(255, 255, 0, 200);
-    line(0, y_debug_window / 2, x_debug_window, y_debug_window / 2);
+    line(0, y_debug_window * (float(y_capture)/y_c), x_debug_window, y_debug_window * (float(y_capture)/y_c));
 
   } else {
     x_debug_window = 0;
@@ -122,7 +126,7 @@ void draw() {
     }
   }
   if (c.pixels.length > 0) {
-    captured_lines[captured_index] = subset(c.pixels, x_c * y_c / 2, x_c);
+    captured_lines[captured_index] = subset(c.pixels, x_c * y_capture + (x_c-width_capture)/2, width_capture);
 
     if (captured_index < captured_max - 1) {
       captured_index++;
@@ -132,7 +136,7 @@ void draw() {
   pushMatrix();
   translate(x_debug_window + margin_chart + x_offset_left, 0);
   scale((x_c - x_debug_window - margin_chart * 2 -
-       x_offset_left - x_offset_right) / float(x_c), 1);
+       x_offset_left - x_offset_right) / float(width_capture), 1);
   for(int i=0; i<captured_lines.length; i++) {
     for(int j=0; j<captured_lines[captured_lines.length -1 - i].length; j++) {
       stroke(captured_lines[captured_lines.length -1 - i][j]);
@@ -176,7 +180,7 @@ void draw() {
   pushMatrix();
   translate(x_debug_window + margin_chart + x_offset_left, y_offset_top);
   scale((x_c - x_debug_window - margin_chart * 2 -
-       x_offset_left - x_offset_right) / float(x_c), (height - captured_max - margin_chart * 2.5 - y_offset_top - y_offset_bottom) / float(y_c - captured_max));
+       x_offset_left - x_offset_right) / float(width_capture), (height - captured_max - margin_chart * 2.5 - y_offset_top - y_offset_bottom) / float(y_c - captured_max));
   // spectrum image
   mask_spectrum.beginDraw();
   mask_spectrum.background(0);
@@ -210,12 +214,13 @@ void draw() {
   pushMatrix();
   resetMatrix();
   translate(x_debug_window + margin_chart, 0);
-  scale((x_c - x_debug_window - margin_chart * 2) / float(x_c), 1);
+  scale((width_capture - x_debug_window - margin_chart * 2) / float(x_c), 1);
   if (rgb_check) {
     drawCharts();
   }
   popMatrix();
 
+  scale(width_capture/ float(x_c), 1);
   drawScale();
   popMatrix();
 }
